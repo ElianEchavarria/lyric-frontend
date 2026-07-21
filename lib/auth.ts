@@ -7,6 +7,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientId: process.env.SPOTIFY_CLIENT_ID,
       clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
       authorization: {
+        // must include the url: the provider's default `authorization` is a plain
+        // string, and Auth.js can't merge a string default with a params-only object
+        url: "https://accounts.spotify.com/authorize",
         params: {
           scope: 'user-read-currently-playing user-read-playback-state user-modify-playback-state'
         }
@@ -14,6 +17,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     })
   ],
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      // dev: Next 16 coerces our origin to localhost, but the session cookie
+      // lives on 127.0.0.1 — keep redirects on the real origin
+      const proxy = process.env.AUTH_REDIRECT_PROXY_URL
+      if (proxy && url.startsWith(new URL(proxy).origin)) return url
+      if (url.startsWith("/")) return `${baseUrl}${url}`
+      if (new URL(url).origin === baseUrl) return url
+      return baseUrl
+    },
     async jwt({ token, account }) {
       if (account) {
         // First-time login, save the `access_token`, its expiry and the `refresh_token`
