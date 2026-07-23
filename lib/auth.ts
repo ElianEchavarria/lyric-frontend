@@ -83,13 +83,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return token
         }
       }
-    }
-  }
+    },
 
-
-
-
-
-
-
+    async session({ session, token }) {
+      session.error = token.error
+      return session
+    },
+  },
 })
+
+declare module "next-auth" {
+  interface Session {
+    error?: "RefreshTokenError"
+  }
+}
+
