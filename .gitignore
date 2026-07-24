@@ -49,3 +49,6 @@ next-env.d.ts
 
 # local https certs (next dev --experimental-https)
 certificates/
+
+# claude code local settings
+.claude/
