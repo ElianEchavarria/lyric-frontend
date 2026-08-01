@@ -1,15 +1,17 @@
 import { auth } from "@/lib/auth";
 import type { Playlist } from "@/types";
 
-// Only the fields we actually use from Spotify's GET /me/playlists response
+// Only the fields we actually use from Spotify's GET /me/playlists response.
+// images/tracks are marked optional because real playlists sometimes omit them
+// (e.g. no cover art, or certain auto-generated playlists) — don't assume they exist.
 interface SpotifyPlaylistsResponse {
-    items: {
+    items: ({
         id: string;
         name: string;
         uri: string;
-        images: { url: string }[];
-        tracks: { total: number };
-    }[];
+        images?: { url: string }[] | null;
+        tracks?: { total: number } | null;
+    } | null)[];
 }
 
 export async function GET() {
@@ -42,8 +44,8 @@ export async function GET() {
                 id: p.id,
                 name: p.name,
                 uri: p.uri,
-                imageUrl: p.images[0]?.url ?? "",
-                trackCount: p.tracks.total,
+                imageUrl: p.images?.[0]?.url ?? "",
+                trackCount: p.tracks?.total ?? 0,
             }));
 
         return Response.json(playlists);
