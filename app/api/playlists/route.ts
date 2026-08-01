@@ -2,15 +2,17 @@ import { auth } from "@/lib/auth";
 import type { Playlist } from "@/types";
 
 // Only the fields we actually use from Spotify's GET /me/playlists response.
-// images/tracks are marked optional because real playlists sometimes omit them
-// (e.g. no cover art, or certain auto-generated playlists) — don't assume they exist.
+// NOTE: `items` here is the top-level array of playlists (the paging object).
+// Each playlist's OWN track-count ref is ALSO called `items` (Spotify renamed it
+// from `tracks` → `items` to cover podcast episodes) — hence `playlist.items.total`.
+// Fields are optional because real playlists sometimes omit them; don't assume.
 interface SpotifyPlaylistsResponse {
     items: ({
         id: string;
         name: string;
         uri: string;
         images?: { url: string }[] | null;
-        tracks?: { total: number } | null;
+        items?: { total: number } | null; // track-count ref (Spotify's new name for `tracks`)
     } | null)[];
 }
 
@@ -45,7 +47,7 @@ export async function GET() {
                 name: p.name,
                 uri: p.uri,
                 imageUrl: p.images?.[0]?.url ?? "",
-                trackCount: p.tracks?.total ?? 0,
+                trackCount: p.items?.total ?? 0,
             }));
 
         return Response.json(playlists);

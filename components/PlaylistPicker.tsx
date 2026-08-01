@@ -44,49 +44,63 @@ const PlaylistPicker = () => {
 
   if (!playlists) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0A0A0F] text-[#EDEDF2]/60">
+      <div className="flex min-h-screen items-center justify-center bg-[#0A0A0F] text-[#EDEDF2]/50">
         <p>Loading playlists…</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0F] px-6 py-10">
-      <h1 className="mb-8 text-3xl font-black tracking-tight text-[#F4F2F8]">
-        Your playlists
-      </h1>
+    <main className="relative min-h-screen overflow-hidden bg-[#0A0A0F] px-6 py-12 sm:px-10">
+      {/* ambient album-art bleed glow */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-[radial-gradient(60%_100%_at_50%_0%,rgba(91,46,145,0.35),rgba(196,84,120,0.12)_45%,transparent_75%)]" />
 
-      {message && (
-        <p className="mb-6 text-sm text-[#F5A34A]">{message}</p>
-      )}
+      <div className="relative mx-auto max-w-6xl">
+        <header className="mb-10">
+          <h1 className="text-4xl font-black tracking-[-0.04em] text-[#F4F2F8] sm:text-5xl">
+            Your playlists
+          </h1>
+          <p className="mt-2 text-sm text-[#EDEDF2]/50">
+            Tap one to play it on your active Spotify device.
+          </p>
+        </header>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-        {playlists.map((playlist) => (
-          <button
-            key={playlist.id}
-            onClick={() => play(playlist.uri)}
-            className="flex flex-col gap-2 rounded-2xl bg-white/[0.04] p-3 text-left transition hover:bg-white/[0.08]"
-          >
-            {playlist.imageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={playlist.imageUrl}
-                alt={`${playlist.name} cover`}
-                className="aspect-square w-full rounded-xl object-cover"
-              />
-            ) : (
-              <div className="aspect-square w-full rounded-xl bg-white/[0.06]" />
-            )}
-            <span className="truncate text-sm font-semibold text-[#F4F2F8]">
-              {playlist.name}
-            </span>
-            <span className="text-xs text-[#EDEDF2]/50">
-              {playlist.trackCount} tracks
-            </span>
-          </button>
-        ))}
+        {message && (
+          <p className="mb-6 inline-block rounded-full bg-[#F5A34A]/10 px-4 py-2 text-sm text-[#F5A34A]">
+            {message}
+          </p>
+        )}
+
+        <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
+          {playlists.map((playlist) => (
+            <button
+              key={playlist.id}
+              onClick={() => play(playlist.uri)}
+              className="group flex flex-col gap-3 rounded-[20px] bg-white/[0.06] p-3 text-left backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:bg-white/[0.10]"
+            >
+              {playlist.imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={playlist.imageUrl}
+                  alt={`${playlist.name} cover`}
+                  className="aspect-square w-full rounded-2xl object-cover shadow-lg shadow-black/40"
+                />
+              ) : (
+                <div className="aspect-square w-full rounded-2xl bg-white/[0.06]" />
+              )}
+              <div className="flex flex-col gap-0.5 px-1 pb-1">
+                <span className="truncate text-sm font-semibold tracking-tight text-[#F4F2F8]">
+                  {playlist.name}
+                </span>
+                <span className="text-xs text-[#EDEDF2]/45">
+                  {playlist.trackCount} {playlist.trackCount === 1 ? "track" : "tracks"}
+                </span>
+              </div>
+            </button>
+          ))}
+        </div>
       </div>
-    </div>
+    </main>
   )
 }
 
