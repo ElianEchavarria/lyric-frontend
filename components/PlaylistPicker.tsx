@@ -1,11 +1,14 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
 import type { Playlist } from "@/types"
 
 const PlaylistPicker = () => {
   const [playlists, setPlaylists] = useState<Playlist[] | null>(null)
   const [message, setMessage] = useState<string | null>(null)
+  const router = useRouter()
 
   async function play(uri: string) {
     setMessage(null)
@@ -17,9 +20,13 @@ const PlaylistPicker = () => {
       })
       if (res.status === 404) {
         setMessage("Open Spotify on a device first, then tap again.")
-      } else if (!res.ok) {
-        setMessage("Couldn't start playback. Try again.")
+        return
       }
+      if (!res.ok) {
+        setMessage("Couldn't start playback. Try again.")
+        return
+      }
+      router.push("/player") // playback started → go straight to the lyrics
     } catch {
       setMessage("Couldn't start playback. Try again.")
     }
@@ -56,13 +63,21 @@ const PlaylistPicker = () => {
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-[radial-gradient(60%_100%_at_50%_0%,rgba(91,46,145,0.35),rgba(196,84,120,0.12)_45%,transparent_75%)]" />
 
       <div className="relative mx-auto max-w-6xl">
-        <header className="mb-10">
-          <h1 className="text-4xl font-black tracking-[-0.04em] text-[#F4F2F8] sm:text-5xl">
-            Your playlists
-          </h1>
-          <p className="mt-2 text-sm text-[#EDEDF2]/50">
-            Tap one to play it on your active Spotify device.
-          </p>
+        <header className="mb-10 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-4xl font-black tracking-[-0.04em] text-[#F4F2F8] sm:text-5xl">
+              Your playlists
+            </h1>
+            <p className="mt-2 text-sm text-[#EDEDF2]/50">
+              Tap one to play it on your active Spotify device.
+            </p>
+          </div>
+          <Link
+            href="/player"
+            className="shrink-0 rounded-full bg-white/[0.06] px-4 py-2 text-sm font-semibold text-[#F4F2F8] backdrop-blur-xl transition hover:bg-white/[0.12]"
+          >
+            Now playing →
+          </Link>
         </header>
 
         {message && (
