@@ -11,7 +11,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // string, and Auth.js can't merge a string default with a params-only object
         url: "https://accounts.spotify.com/authorize",
         params: {
-          scope: 'user-read-currently-playing user-read-playback-state user-modify-playback-state'
+          scope: 'user-read-currently-playing user-read-playback-state user-modify-playback-state playlist-read-private playlist-read-collaborative'
         }
       }
     })
@@ -86,6 +86,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
 
     async session({ session, token }) {
+      // exposed so route handlers can call Spotify via auth() (which refreshes);
+      // getToken() would NOT run the refresh callback — see PLAN.md challenge #13
+      session.access_token = token.access_token
       session.error = token.error
       return session
     },
@@ -94,6 +97,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
 declare module "next-auth" {
   interface Session {
+    access_token?: string
     error?: "RefreshTokenError"
   }
 }

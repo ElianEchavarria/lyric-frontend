@@ -1,4 +1,4 @@
-import { getToken } from "next-auth/jwt";
+import { auth } from "@/lib/auth";
 
 
 // token.access_token is what you pass to Spotify
@@ -19,9 +19,11 @@ interface SpotifyNowPlaying {
 }
 
 
-export async function GET(request: Request) {
-    const token = await getToken({ req: request, secret: process.env.AUTH_SECRET });
-    if (!token?.access_token) {
+export async function GET() {
+    // auth() runs the jwt callback, which refreshes the token if it's expired.
+    // getToken() only decrypts the cookie and would serve a stale token.
+    const session = await auth();
+    if (!session?.access_token) {
         return new Response("Unauthorized", { status: 401 });
     }
 
@@ -30,7 +32,7 @@ export async function GET(request: Request) {
             method: 'GET',
             headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${token.access_token}`
+                Authorization: `Bearer ${session.access_token}`
             },
 
         })

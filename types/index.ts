@@ -8,3 +8,11 @@ export interface NowPlaying {
     progressMs: number;
     isPlaying: boolean;
 }
+
+export interface Playlist {
+    id: string;
+    name: string;
+    imageUrl: string;
+    trackCount: number;
+    uri: string; // "spotify:playlist:..." — the context_uri for starting playback
+}
