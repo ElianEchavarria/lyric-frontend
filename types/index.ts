@@ -16,3 +16,10 @@ export interface Playlist {
     trackCount: number;
     uri: string; // "spotify:playlist:..." — the context_uri for starting playback
 }
+
+export interface Lyrics {
+    track_name: string;
+    artist_name: string;
+    album_name: string;
+    duration: number;
+}
