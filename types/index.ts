@@ -23,3 +23,8 @@ export interface Lyrics {
     album_name: string;
     duration: number;
 }
+
+export interface SyncedLine {
+    time: number; // ms from track start
+    text: string;
+}

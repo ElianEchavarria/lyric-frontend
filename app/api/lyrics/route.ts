@@ -1,3 +1,5 @@
+import { parseLrc } from "@/lib/lyrics/parse";
+
 // Only the fields we care about from lrclib's /api/get response.
 // syncedLyrics/plainLyrics are null for instrumental tracks.
 interface LrclibResponse {
@@ -45,9 +47,26 @@ export async function GET(request: Request) {
 
         const data = (await res.json()) as LrclibResponse;
 
-        // TEMP: return raw lrclib data so we can eyeball `syncedLyrics`.
-        // Next step (parse.ts) turns syncedLyrics → SyncedLine[] / LyricResult.
-        return Response.json(data);
+        // Synced lyrics → parse into timestamped lines
+        if (data.syncedLyrics) {
+            return Response.json({
+                source: "lrclib",
+                type: "synced-lines",
+                lines: parseLrc(data.syncedLyrics),
+            });
+        }
+
+        // Only plain (unsynced) text available → return it line by line
+        if (data.plainLyrics) {
+            return Response.json({
+                source: "lrclib",
+                type: "unsynced",
+                lines: data.plainLyrics.split("\n"),
+            });
+        }
+
+        // Instrumental or empty → no lyrics
+        return Response.json({ source: null, type: "none", lines: [] });
     } catch (error) {
         console.error("Failed to fetch lyrics:", error);
         return Response.json({ error: "Failed to fetch lyrics" }, { status: 500 });
