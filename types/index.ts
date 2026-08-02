@@ -28,3 +28,9 @@ export interface SyncedLine {
     time: number; // ms from track start
     text: string;
 }
+
+export interface LyricResult {
+    source: "lrclib" | "musixmatch" | "genius" | null;
+    type: "synced-lines" | "synced-words" | "unsynced" | "none";
+    lines: SyncedLine[] | string[];
+}

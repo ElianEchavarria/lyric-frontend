@@ -1,11 +1,5 @@
-import NowPlaying from "@/components/NowPlaying";
+import { LyricDisplay } from "@/components/LyricDisplay";
 
-
-
-export default function home(){
-    return (
-        <>
-        <NowPlaying />
-        </>
-    )
+export default function PlayerPage() {
+  return <LyricDisplay />;
 }
