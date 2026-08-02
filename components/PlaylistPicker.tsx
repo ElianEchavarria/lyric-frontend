@@ -19,7 +19,7 @@ const PlaylistPicker = () => {
         body: JSON.stringify({ contextUri: uri }),
       })
       if (res.status === 404) {
-        setMessage("Open Spotify on a device first, then tap again.")
+        setMessage("Open Spotify on a device first and play a song, then tap again.")
         return
       }
       if (!res.ok) {
