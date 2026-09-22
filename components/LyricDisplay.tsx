@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useNowPlaying } from "@/hooks/useNowPlaying"
 import { useLyrics } from "@/hooks/useLyrics"
 import { usePlaybackClock } from "@/hooks/usePlaybackClock"
+import { useRef, useEffect } from "react"
 import type { SyncedLine } from "@/types"
 
 const Shell = ({ children }: { children: React.ReactNode }) => (
@@ -34,7 +35,9 @@ export function LyricDisplay() {
   )
   // Must be called before any early return — hooks can't run conditionally.
   const progress = usePlaybackClock(nowPlaying?.progressMs, nowPlaying?.isPlaying)
+  
 
+  
   if (!nowPlaying) {
     return <Shell><Centered text="Nothing playing" /></Shell>
   }
@@ -44,7 +47,7 @@ export function LyricDisplay() {
   if (lyrics.type === "none") {
     return <Shell><Centered text="No lyrics found" /></Shell>
   }
-
+  
   // Unsynced: plain text, no highlight
   if (lyrics.type === "unsynced") {
     return (
@@ -57,7 +60,11 @@ export function LyricDisplay() {
       </Shell>
     )
   }
+  
+  const activeLineRef = useRef<HTMLParagraphElement>(null)
 
+  
+  
   // Synced: the active line = the last line whose time has already passed.
   // (lines are sorted ascending, so once we pass progress we can stop.)
   const lines = lyrics.lines as SyncedLine[]
@@ -66,13 +73,18 @@ export function LyricDisplay() {
     if (lines[i].time <= progress) activeIndex = i
     else break
   }
-
+  
+  useEffect(() => {
+      activeLineRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+  }, [activeIndex])
+  
   return (
-    <Shell>
+   <Shell>
       <div className="mx-auto max-w-2xl space-y-4 px-6 py-[40vh]">
         {lines.map((line, i) => (
           <p
             key={i}
+            ref={i === activeIndex ? activeLineRef : null}
             className={
               i === activeIndex
                 ? "text-3xl font-bold tracking-tight text-[#F4F2F8] transition-all duration-500"
