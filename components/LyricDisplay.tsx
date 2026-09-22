@@ -4,18 +4,44 @@ import Link from "next/link"
 import { useNowPlaying } from "@/hooks/useNowPlaying"
 import { useLyrics } from "@/hooks/useLyrics"
 import { usePlaybackClock } from "@/hooks/usePlaybackClock"
+import { useColorPalette, type Palette } from "@/hooks/useColorPalette"
 import { useRef, useEffect } from "react"
 import type { SyncedLine } from "@/types"
 
-const Shell = ({ children }: { children: React.ReactNode }) => (
-  <div className="relative min-h-screen bg-[#0A0A0F]">
+const Shell = ({
+  children,
+  palette,
+}: {
+  children: React.ReactNode
+  palette: Palette
+}) => (
+  <div
+    className="relative min-h-screen transition-colors duration-700"
+    style={{ backgroundColor: palette.dark }}
+  >
+    <div
+      className="pointer-events-none fixed inset-0 transition-[background] duration-700"
+      style={{
+        background: `linear-gradient(180deg, ${palette.mid} 0%, ${palette.dark} 100%)`,
+      }}
+    />
+    <div
+      className="pointer-events-none fixed inset-0 opacity-25 transition-colors duration-700"
+      style={{ backgroundColor: palette.accent }}
+    />
+    <div
+      className="pointer-events-none fixed inset-0 opacity-45 transition-[background] duration-700"
+      style={{
+        background: `radial-gradient(75% 55% at 50% 0%, ${palette.accent}, transparent 70%)`,
+      }}
+    />
     <Link
       href="/playlists"
-      className="absolute left-5 top-5 z-10 rounded-full bg-white/[0.06] px-4 py-2 text-sm font-semibold text-[#F4F2F8] backdrop-blur-xl transition hover:bg-white/[0.12]"
+      className="fixed left-5 top-5 z-20 rounded-full bg-white/[0.06] px-4 py-2 text-sm font-semibold text-[#F4F2F8] backdrop-blur-xl transition hover:bg-white/[0.12]"
     >
       ← Playlists
     </Link>
-    {children}
+    <div className="relative z-10">{children}</div>
   </div>
 )
 
@@ -33,13 +59,10 @@ export function LyricDisplay() {
     nowPlaying?.album,
     nowPlaying?.durationMs,
   )
-  // All hooks must run before any early return — they can't be conditional.
   const progress = usePlaybackClock(nowPlaying?.progressMs, nowPlaying?.isPlaying)
+  const palette = useColorPalette(nowPlaying?.albumArtUrl)
   const activeLineRef = useRef<HTMLParagraphElement>(null)
 
-  // The active line = the last line whose time has already passed.
-  // (lines are sorted ascending, so once we pass progress we can stop.)
-  // Falls back to [] when there are no synced lyrics, so this stays harmless.
   const lines = lyrics?.type === "synced-lines" ? (lyrics.lines as SyncedLine[]) : []
   let activeIndex = -1
   for (let i = 0; i < lines.length; i++) {
@@ -47,26 +70,23 @@ export function LyricDisplay() {
     else break
   }
 
-  // Keep the active line centered. Depends on activeIndex (not progress) so it
-  // scrolls only when the line changes, not on every clock tick.
   useEffect(() => {
     activeLineRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
   }, [activeIndex])
 
   if (!nowPlaying) {
-    return <Shell><Centered text="Nothing playing" /></Shell>
+    return <Shell palette={palette}><Centered text="Nothing playing" /></Shell>
   }
   if (!lyrics) {
-    return <Shell><Centered text="Loading lyrics…" /></Shell>
+    return <Shell palette={palette}><Centered text="Loading lyrics…" /></Shell>
   }
   if (lyrics.type === "none") {
-    return <Shell><Centered text="No lyrics found" /></Shell>
+    return <Shell palette={palette}><Centered text="No lyrics found" /></Shell>
   }
-  
-  // Unsynced: plain text, no highlight
+
   if (lyrics.type === "unsynced") {
     return (
-      <Shell>
+      <Shell palette={palette}>
         <div className="mx-auto max-w-2xl space-y-3 px-6 py-24 text-lg text-[#EDEDF2]/70">
           {(lyrics.lines as string[]).map((line, i) => (
             <p key={i}>{line}</p>
@@ -75,12 +95,9 @@ export function LyricDisplay() {
       </Shell>
     )
   }
-  
-  
-  
-  
+
   return (
-   <Shell>
+    <Shell palette={palette}>
       <div className="mx-auto max-w-2xl space-y-4 px-6 py-[40vh]">
         {lines.map((line, i) => (
           <p
