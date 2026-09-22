@@ -33,11 +33,26 @@ export function LyricDisplay() {
     nowPlaying?.album,
     nowPlaying?.durationMs,
   )
-  // Must be called before any early return — hooks can't run conditionally.
+  // All hooks must run before any early return — they can't be conditional.
   const progress = usePlaybackClock(nowPlaying?.progressMs, nowPlaying?.isPlaying)
-  
+  const activeLineRef = useRef<HTMLParagraphElement>(null)
 
-  
+  // The active line = the last line whose time has already passed.
+  // (lines are sorted ascending, so once we pass progress we can stop.)
+  // Falls back to [] when there are no synced lyrics, so this stays harmless.
+  const lines = lyrics?.type === "synced-lines" ? (lyrics.lines as SyncedLine[]) : []
+  let activeIndex = -1
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].time <= progress) activeIndex = i
+    else break
+  }
+
+  // Keep the active line centered. Depends on activeIndex (not progress) so it
+  // scrolls only when the line changes, not on every clock tick.
+  useEffect(() => {
+    activeLineRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+  }, [activeIndex])
+
   if (!nowPlaying) {
     return <Shell><Centered text="Nothing playing" /></Shell>
   }
@@ -61,22 +76,8 @@ export function LyricDisplay() {
     )
   }
   
-  const activeLineRef = useRef<HTMLParagraphElement>(null)
-
   
   
-  // Synced: the active line = the last line whose time has already passed.
-  // (lines are sorted ascending, so once we pass progress we can stop.)
-  const lines = lyrics.lines as SyncedLine[]
-  let activeIndex = -1
-  for (let i = 0; i < lines.length; i++) {
-    if (lines[i].time <= progress) activeIndex = i
-    else break
-  }
-  
-  useEffect(() => {
-      activeLineRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
-  }, [activeIndex])
   
   return (
    <Shell>
