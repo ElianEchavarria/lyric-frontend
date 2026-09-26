@@ -66,7 +66,7 @@ export function LyricDisplay() {
   const lines = lyrics?.type === "synced-lines" ? (lyrics.lines as SyncedLine[]) : []
   let activeIndex = -1
   for (let i = 0; i < lines.length; i++) {
-    if (lines[i].time <= progress) activeIndex = i
+    if (lines[i].startTime <= progress) activeIndex = i
     else break
   }
 

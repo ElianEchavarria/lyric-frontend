@@ -24,9 +24,16 @@ export interface Lyrics {
     duration: number;
 }
 
-export interface SyncedLine {
-    time: number; // ms from track start
+export interface Word {
     text: string;
+    startTime: number; // ms from track start
+    endTime: number;   // ms from track start
+}
+
+export interface SyncedLine {
+    startTime: number; // ms from track start
+    text: string;
+    words?: Word[]; // populated only for enhanced LRC lines
 }
 
 export interface LyricResult {
